@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "id.adiandrea.progressnotif"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "id.adiandrea.progressnotif"
         minSdk = 30
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
