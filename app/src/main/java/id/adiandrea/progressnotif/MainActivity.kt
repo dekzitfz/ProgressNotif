@@ -4,6 +4,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.RemoteViews
 import androidx.activity.enableEdgeToEdge
@@ -11,16 +12,16 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var notificationManager: NotificationManager
     private lateinit var notificationLayout: RemoteViews
     private lateinit var customNotification: NotificationCompat.Builder
-    private var counter = 0
+    private var progress: Int = 0
+    private var maxProgress: Int = 100
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,19 +37,24 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btn).setOnClickListener {
             createNotification()
         }
-        findViewById<Button>(R.id.update).setOnClickListener {
-            updateNotification()
-        }
     }
 
     private fun updateNotification() {
-        notificationLayout.setTextViewText(R.id.notification_title, "${counter++}")
+        while (progress < maxProgress) {
+            runBlocking {
+                delay(2000L)
+                progress += 25
+                Log.i("PROGRESS", "$progress")
 
-        lifecycleScope.launch {
-            for (i in 0 until 100) {
-                delay(2000)
-                counter += 1
-                notificationLayout.setTextViewText(R.id.notification_title, "$counter")
+                notificationLayout.removeAllViews(R.id.root_progress)
+                repeat(progress){
+                    notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_left))
+                }
+                notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_thumb))
+                repeat(maxProgress - progress) {
+                    notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_right))
+                }
+
                 notificationManager.notify(123, customNotification.build())
             }
         }
@@ -56,12 +62,22 @@ class MainActivity : AppCompatActivity() {
 
     private fun createNotification() {
         notificationLayout = RemoteViews(packageName, R.layout.custom_notification)
+        repeat(progress){
+            notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_left))
+        }
+        notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_thumb))
+        repeat(maxProgress - progress) {
+            notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_right))
+        }
         customNotification = NotificationCompat.Builder(applicationContext, "TESTNOTIF")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setStyle(NotificationCompat.DecoratedCustomViewStyle())
             .setCustomContentView(notificationLayout)
 
         notificationManager.notify(123, customNotification.build())
+        Log.i("PROGRESS", "$progress")
+
+        updateNotification()
     }
 
     private fun createNotificationChannel() {
