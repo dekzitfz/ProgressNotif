@@ -20,7 +20,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.math.max
 
 class MainActivity : AppCompatActivity() {
 
@@ -30,6 +29,38 @@ class MainActivity : AppCompatActivity() {
     private lateinit var customNotification: NotificationCompat.Builder
     private var progress: Int = 0
     private var maxProgress: Int = 100
+    private val contents = listOf(
+        NotificationContent(
+            status = "Kitchen's Preparing Your Order",
+            eta = "",
+            infoDesc = "We'll let you know when it's out for delivery",
+            progress = 10
+        ),
+        NotificationContent(
+            status = "Delivery by",
+            eta = "01:00 PM - 01:15 PM",
+            infoDesc = "Kitchen's preparing your order",
+            progress = 25
+        ),
+        NotificationContent(
+            status = "Delivery by",
+            eta = "01:15 PM - 01:30 PM",
+            infoDesc = "Kitchen's preparing your order",
+            progress = 50
+        ),
+        NotificationContent(
+            status = "Arriving by",
+            eta = "01:30 PM",
+            infoDesc = "Out for delivery!",
+            progress = 75
+        ),
+        NotificationContent(
+            status = "Arrived at",
+            eta = "01:29 PM",
+            infoDesc = "Thanks for ordering with us. Enjoy!",
+            progress = 100
+        )
+    )
 
     private val REQUIRED_PERMISSIONS = arrayOf(
         Manifest.permission.POST_NOTIFICATIONS
@@ -39,7 +70,14 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
-            createNotification()
+            createNotification(
+                NotificationContent(
+                    status = "Kitchen's Preparing Your Order",
+                    eta = "",
+                    infoDesc = "We'll let you know when it's out for delivery",
+                    progress = 0
+                )
+            )
         } else {
             Toast.makeText(
                 this,
@@ -67,13 +105,26 @@ class MainActivity : AppCompatActivity() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             } else {
-                createNotification()
+                createNotification(
+                    NotificationContent(
+                        status = "Kitchen's Preparing Your Order",
+                        eta = "",
+                        infoDesc = "We'll let you know when it's out for delivery",
+                        progress = 0
+                    )
+                )
             }
         }
     }
 
-    private fun updateNotification() {
-        progress += 25
+    private fun updateNotification(content: NotificationContent) {
+        notificationLayout.setTextViewText(R.id.status, content.status)
+        notificationLayout.setTextViewText(R.id.eta, content.eta)
+        notificationLayoutExpanded.setTextViewText(R.id.status, content.status)
+        notificationLayoutExpanded.setTextViewText(R.id.eta, content.eta)
+        notificationLayoutExpanded.setTextViewText(R.id.info_desc, content.infoDesc)
+
+        progress = content.progress
         Log.i("PROGRESS", "$progress")
 
         notificationLayout.removeAllViews(R.id.root_progress)
@@ -81,6 +132,7 @@ class MainActivity : AppCompatActivity() {
 
         //add rounded view to the progress bar on the left side
         notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_corner_left))
+        notificationLayout.setTextViewText(R.id.status, content.status)
         notificationLayoutExpanded.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_corner_left))
 
         repeat(progress){
@@ -109,10 +161,17 @@ class MainActivity : AppCompatActivity() {
         notificationManager.notify(123, customNotification.build())
     }
 
-    private fun createNotification() {
-        progress = 0
+    private fun createNotification(content: NotificationContent) {
         notificationLayout = RemoteViews(packageName, R.layout.custom_notification)
         notificationLayoutExpanded = RemoteViews(packageName, R.layout.custom_notification_expanded)
+
+        notificationLayout.setTextViewText(R.id.status, content.status)
+        notificationLayout.setTextViewText(R.id.eta, content.eta)
+        notificationLayoutExpanded.setTextViewText(R.id.status, content.status)
+        notificationLayoutExpanded.setTextViewText(R.id.eta, content.eta)
+        notificationLayoutExpanded.setTextViewText(R.id.info_desc, content.infoDesc)
+
+        progress = content.progress
 
         //add rounded view to the progress bar on the left side
         notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_corner_left))
@@ -143,10 +202,14 @@ class MainActivity : AppCompatActivity() {
         Log.i("PROGRESS", "$progress")
 
         lifecycleScope.launch {
-            while (progress < maxProgress) {
+            contents.forEach { data ->
                 delay(3000L)
-                updateNotification()
+                updateNotification(data)
             }
+//            while (progress < maxProgress) {
+//                delay(3000L)
+//                updateNotification()
+//            }
         }
 
     }
