@@ -17,8 +17,9 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -36,7 +37,6 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
-            // PERMISSION GRANTED
             createNotification()
         } else {
             Toast.makeText(
@@ -71,24 +71,24 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateNotification() {
-        while (progress < maxProgress) {
-            runBlocking {
-                delay(2000L)
-                progress += 25
-                Log.i("PROGRESS", "$progress")
+        progress += 25
+        Log.i("PROGRESS", "$progress")
 
-                notificationLayout.removeAllViews(R.id.root_progress)
-                repeat(progress){
-                    notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_left))
-                }
-                notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_thumb))
-                repeat(maxProgress - progress) {
-                    notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_right))
-                }
-
-                notificationManager.notify(123, customNotification.build())
-            }
+        notificationLayout.removeAllViews(R.id.root_progress)
+        repeat(progress){
+            notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_left))
         }
+
+        if (progress == maxProgress) {
+            notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_thumb_finish))
+        } else {
+            notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_thumb))
+        }
+        repeat(maxProgress - progress) {
+            notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_right))
+        }
+
+        notificationManager.notify(123, customNotification.build())
     }
 
     private fun createNotification() {
@@ -109,7 +109,13 @@ class MainActivity : AppCompatActivity() {
         notificationManager.notify(123, customNotification.build())
         Log.i("PROGRESS", "$progress")
 
-        updateNotification()
+        lifecycleScope.launch {
+            while (progress < maxProgress) {
+                updateNotification()
+                delay(2000L)
+            }
+        }
+
     }
 
     private fun createNotificationChannel() {

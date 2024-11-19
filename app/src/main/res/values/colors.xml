@@ -2,4 +2,6 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="track_inactive">#FF959a9d</color>
+    <color name="track_active">#FF0a9830</color>
 </resources>
