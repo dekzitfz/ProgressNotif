@@ -1,14 +1,19 @@
 package id.adiandrea.progressnotif
 
+import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.RemoteViews
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -23,6 +28,28 @@ class MainActivity : AppCompatActivity() {
     private var progress: Int = 0
     private var maxProgress: Int = 100
 
+    private val REQUIRED_PERMISSIONS = arrayOf(
+        Manifest.permission.POST_NOTIFICATIONS
+    )
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            // PERMISSION GRANTED
+            createNotification()
+        } else {
+            Toast.makeText(
+                this,
+                "Please give permission to post notifications!",
+                Toast.LENGTH_SHORT
+            ).show()
+            ActivityCompat.requestPermissions(
+                this@MainActivity, REQUIRED_PERMISSIONS, 100
+            )
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -35,7 +62,11 @@ class MainActivity : AppCompatActivity() {
         createNotificationChannel()
 
         findViewById<Button>(R.id.btn).setOnClickListener {
-            createNotification()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            } else {
+                createNotification()
+            }
         }
     }
 
@@ -61,6 +92,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun createNotification() {
+        progress = 0
         notificationLayout = RemoteViews(packageName, R.layout.custom_notification)
         repeat(progress){
             notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_left))
