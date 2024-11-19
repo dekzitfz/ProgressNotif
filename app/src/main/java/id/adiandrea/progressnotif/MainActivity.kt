@@ -20,6 +20,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.max
 
 class MainActivity : AppCompatActivity() {
 
@@ -75,6 +76,9 @@ class MainActivity : AppCompatActivity() {
         Log.i("PROGRESS", "$progress")
 
         notificationLayout.removeAllViews(R.id.root_progress)
+        //add rounded view to the progress bar on the left side
+        notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_corner_left))
+
         repeat(progress){
             notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_left))
         }
@@ -88,12 +92,21 @@ class MainActivity : AppCompatActivity() {
             notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_right))
         }
 
+        if (progress < maxProgress) {
+            //add rounded view to the progress bar on the right side
+            notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_corner_right))
+        }
+
         notificationManager.notify(123, customNotification.build())
     }
 
     private fun createNotification() {
         progress = 0
         notificationLayout = RemoteViews(packageName, R.layout.custom_notification)
+
+        //add rounded view to the progress bar on the left side
+        notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_corner_left))
+
         repeat(progress){
             notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_left))
         }
@@ -101,6 +114,10 @@ class MainActivity : AppCompatActivity() {
         repeat(maxProgress - progress) {
             notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_right))
         }
+
+        //add rounded view to the progress bar on the right side
+        notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_corner_right))
+
         customNotification = NotificationCompat.Builder(applicationContext, "TESTNOTIF")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setStyle(NotificationCompat.DecoratedCustomViewStyle())
@@ -111,8 +128,8 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             while (progress < maxProgress) {
+                delay(3000L)
                 updateNotification()
-                delay(2000L)
             }
         }
 
