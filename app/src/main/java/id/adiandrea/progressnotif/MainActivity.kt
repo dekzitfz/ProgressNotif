@@ -26,6 +26,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var notificationManager: NotificationManager
     private lateinit var notificationLayout: RemoteViews
+    private lateinit var notificationLayoutExpanded: RemoteViews
     private lateinit var customNotification: NotificationCompat.Builder
     private var progress: Int = 0
     private var maxProgress: Int = 100
@@ -76,25 +77,33 @@ class MainActivity : AppCompatActivity() {
         Log.i("PROGRESS", "$progress")
 
         notificationLayout.removeAllViews(R.id.root_progress)
+        notificationLayoutExpanded.removeAllViews(R.id.root_progress)
+
         //add rounded view to the progress bar on the left side
         notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_corner_left))
+        notificationLayoutExpanded.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_corner_left))
 
         repeat(progress){
             notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_left))
+            notificationLayoutExpanded.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_left))
         }
 
         if (progress == maxProgress) {
             notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_thumb_finish))
+            notificationLayoutExpanded.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_thumb_finish))
         } else {
             notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_thumb))
+            notificationLayoutExpanded.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_thumb))
         }
         repeat(maxProgress - progress) {
             notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_right))
+            notificationLayoutExpanded.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_right))
         }
 
         if (progress < maxProgress) {
             //add rounded view to the progress bar on the right side
             notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_corner_right))
+            notificationLayoutExpanded.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_corner_right))
         }
 
         notificationManager.notify(123, customNotification.build())
@@ -103,25 +112,32 @@ class MainActivity : AppCompatActivity() {
     private fun createNotification() {
         progress = 0
         notificationLayout = RemoteViews(packageName, R.layout.custom_notification)
+        notificationLayoutExpanded = RemoteViews(packageName, R.layout.custom_notification_expanded)
 
         //add rounded view to the progress bar on the left side
         notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_corner_left))
+        notificationLayoutExpanded.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_corner_left))
 
         repeat(progress){
             notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_left))
+            notificationLayoutExpanded.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_left))
         }
         notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_thumb))
+        notificationLayoutExpanded.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_thumb))
         repeat(maxProgress - progress) {
             notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_right))
+            notificationLayoutExpanded.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_right))
         }
 
         //add rounded view to the progress bar on the right side
         notificationLayout.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_corner_right))
+        notificationLayoutExpanded.addView(R.id.root_progress, RemoteViews(packageName, R.layout.image_corner_right))
 
         customNotification = NotificationCompat.Builder(applicationContext, "TESTNOTIF")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setStyle(NotificationCompat.DecoratedCustomViewStyle())
             .setCustomContentView(notificationLayout)
+            .setCustomBigContentView(notificationLayoutExpanded)
 
         notificationManager.notify(123, customNotification.build())
         Log.i("PROGRESS", "$progress")

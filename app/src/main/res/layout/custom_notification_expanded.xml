@@ -5,7 +5,14 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
+    <ImageView
+        android:src="@drawable/ic_logo_grab"
+        android:layout_width="50dp"
+        android:layout_height="18dp"/>
+
     <LinearLayout
+        android:gravity="center_vertical"
+        android:layout_marginTop="8dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
@@ -28,7 +35,13 @@
 
     </LinearLayout>
 
-
+    <TextView
+        android:layout_marginTop="4dp"
+        android:id="@+id/info_desc"
+        style="@style/TextAppearance.Compat.Notification.Line2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Kitchen's preparing your order" />
 
     <LinearLayout
         android:gravity="center_vertical"
